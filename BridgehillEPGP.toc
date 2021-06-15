@@ -1,0 +1,7 @@
+## Interface: 20501
+## Title: Bridgehill EPGP
+## Notes: A loot distribution helper for Bridgehill's EPGP system.
+## Author: stephenswat
+## Version: v0.0.1
+
+BridgehillEPGP.lua
