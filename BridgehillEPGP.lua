@@ -1,3 +1,5 @@
+local _, data = ...
+
 local Priorities = {
     HIGH = 3,
     MEDIUM = 2,
@@ -34,7 +36,13 @@ local function get_announce_target(warn)
 end
 
 local function send_whisper(msg, target)
-    SendChatMessage('BH EPHP: ' .. msg, "WHISPER", nil, target)
+    local fmsg = 'BH EPHP: ' .. msg
+
+    if target == UnitName('player') then
+        print(fmsg)
+    else
+        SendChatMessage(fmsg, "WHISPER", nil, target)
+    end
 end
 
 local function send_message(msg, warn)
@@ -103,12 +111,35 @@ local function do_start_roll(item_link, duration)
         roll_state.candidates[name] = true
     end
 
-    send_message('Bid for ' .. item_link .. ' (' .. tostring(duration) .. ' seconds)', true)
+    local s, e = string.find(item_link, '|H([^|]*)|h')
+    local _, itemId = strsplit(":", string.sub(item_link, s+2, e-2))
+
+    local priceData = data.items[tonumber(itemId)]
+
+    local extraStr = ""
+
+    if priceData ~= nil then
+        extraStr = extraStr .. 'GP value ' .. tostring(priceData.price)
+
+        if priceData.prio ~= nil then
+            extraStr = extraStr .. ", prio " .. priceData.prio
+        end
+    end
+
+    if extraStr ~= "" then
+        extraStr = extraStr .. ", "
+    end
+
+    extraStr = extraStr .. "bid time " .. tostring(duration) .. ' seconds'
+
+    send_message('Bid for ' .. item_link .. ' (' .. extraStr .. ')', true)
 
     roll_state.ticker = C_Timer.NewTicker(1, handle_tick, duration)
 end
 
 local function handle_msg(msg, player)
+    player = clean_name(player)
+
     if roll_state.rolling_item == nil then
         return
     end
